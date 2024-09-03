@@ -1,0 +1,4 @@
+Download python create ticket if you need help with this
+
+Then just run the installer.bat
+Then run the main.py using python and it should work!

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Clicker</title>
+    <style id="themeStyles">
+        /* Base styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container {
+            width: 350px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: inherit; /* Ensure the text color inherits from the theme */
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: inherit; /* Ensure the text color inherits from the theme */
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        button {
+            width: 80%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+            color: #fff;
+            transition: background-color 0.3s;
+        }
+        #start {
+            background-color: #27ae60;
+        }
+        #start:hover {
+            background-color: #219150;
+        }
+        #stop {
+            background-color: #e74c3c;
+        }
+        #stop:hover {
+            background-color: #c0392b;
+        }
+        #settings {
+            background-color: #3498db;
+        }
+        #settings:hover {
+            background-color: #2980b9;
+        }
+        #status {
+            margin-top: 15px;
+            color: inherit; /* Ensure the text color inherits from the theme */
+        }
+        #configModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+        #configModal .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: #333; /* Default text color for light theme */
+        }
+        #configModal .modal-content button {
+            background-color: #e74c3c;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        #configModal .modal-content select,
+        #configModal .modal-content input {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        .floating-action-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #3498db;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+        .floating-action-btn:hover {
+            background-color: #2980b9;
+        }
+        /* Notification styles */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #27ae60;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+            transition: opacity 0.3s;
+        }
+        #notification.error {
+            background-color: #e74c3c;
+        }
+        #notification .close-btn {
+            float: right;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        #notification.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Auto Clicker</h1>
+        <label for="hours">Hours:</label>
+        <input type="number" id="hours" min="0" value="0">
+        <label for="minutes">Minutes:</label>
+        <input type="number" id="minutes" min="0" value="0">
+        <label for="seconds">Seconds:</label>
+        <input type="number" id="seconds" min="0" value="0">
+        <label for="milliseconds">Milliseconds:</label>
+        <input type="number" id="milliseconds" min="0" value="0">
+
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+
+        <div id="status">Status: Idle</div>
+    </div>
+
+    <div id="configModal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            <div>
+                <label for="themeToggle">Theme:</label>
+                <select id="themeToggle">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+            <div>
+                <label for="hotkeyInput">Hotkey:</label>
+                <input type="text" id="hotkeyInput" maxlength="1">
+            </div>
+            <button id="saveSettings">Save</button>
+            <button id="closeModal">Close</button>
+        </div>
+    </div>
+
+    <div class="floating-action-btn" id="settingsButton">
+        ⚙
+    </div>
+
+    <div id="notification">
+        Settings saved! <span class="close-btn">✖</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startButton = document.getElementById('start');
+            const stopButton = document.getElementById('stop');
+            const settingsButton = document.getElementById('settingsButton');
+            const configModal = document.getElementById('configModal');
+            const closeModalButton = document.getElementById('closeModal');
+            const saveSettingsButton = document.getElementById('saveSettings');
+            const themeToggle = document.getElementById('themeToggle');
+            const hotkeyInput = document.getElementById('hotkeyInput');
+            const statusDiv = document.getElementById('status');
+            const notification = document.getElementById('notification');
+            const notificationCloseButton = notification.querySelector('.close-btn');
+
+            let intervalId;
+            let hotkeyEnabled = false;
+
+            function applyTheme(theme) {
+                const isDark = theme === 'dark';
+                document.body.style.backgroundColor = isDark ? '#121212' : '#f4f4f4';
+                document.querySelector('.container').style.backgroundColor = isDark ? '#1e1e1e' : '#fff';
+                document.querySelectorAll('input').forEach(input => {
+                    input.style.backgroundColor = isDark ? '#333' : '#fff';
+                    input.style.borderColor = isDark ? '#444' : '#ddd';
+                    input.style.color = isDark ? '#e0e0e0' : '#000';
+                });
+                document.querySelector('#configModal .modal-content').style.backgroundColor = isDark ? '#1e1e1e' : '#fff';
+                document.querySelector('#configModal .modal-content').style.color = isDark ? '#e0e0e0' : '#333';
+                document.querySelectorAll('label, h1, #status').forEach(el => {
+                    el.style.color = isDark ? '#e0e0e0' : '#333'; // White text color for dark theme
+                });
+            }
+
+            function getInterval() {
+                const hours = parseInt(document.getElementById('hours').value) || 0;
+                const minutes = parseInt(document.getElementById('minutes').value) || 0;
+                const seconds = parseInt(document.getElementById('seconds').value) || 0;
+                const milliseconds = parseInt(document.getElementById('milliseconds').value) || 0;
+                return {
+                    totalSeconds: (hours * 3600) + (minutes * 60) + seconds,
+                    milliseconds
+                };
+            }
+
+            function clickElement() {
+                // Simulate clicking the element
+                console.log('Click!');
+                // You can replace this with actual clicking code if needed
+            }
+
+            function startAutoClicker() {
+                const interval = getInterval();
+                const totalIntervalMs = (interval.totalSeconds * 1000) + interval.milliseconds;
+                if (intervalId) clearInterval(intervalId);
+                intervalId = setInterval(clickElement, totalIntervalMs);
+                statusDiv.textContent = 'Status: Running';
+                showNotification('Auto clicker started!');
+            }
+
+            function stopAutoClicker() {
+                if (intervalId) clearInterval(intervalId);
+                intervalId = null;
+                statusDiv.textContent = 'Status: Stopped';
+                showNotification('Auto clicker stopped!');
+            }
+
+            function showNotification(message, type = 'success') {
+                notification.textContent = `${message} `;
+                notification.className = `show ${type}`;
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            function updateIntervalOnServer() {
+                const { totalSeconds, milliseconds } = getInterval();
+                fetch('/updateInterval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ interval: { totalSeconds, milliseconds } })
+                }).catch(error => console.error('Error updating interval:', error));
+            }
+
+            function updateHotkeyOnServer(hotkey) {
+                fetch('/updateHotkey', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ hotkey })
+                }).catch(error => console.error('Error updating hotkey:', error));
+            }
+
+            document.getElementById('hours').addEventListener('change', updateIntervalOnServer);
+            document.getElementById('minutes').addEventListener('change', updateIntervalOnServer);
+            document.getElementById('seconds').addEventListener('change', updateIntervalOnServer);
+            document.getElementById('milliseconds').addEventListener('change', updateIntervalOnServer);
+
+            hotkeyInput.addEventListener('input', () => {
+                hotkeyEnabled = hotkeyInput.value !== '';
+                updateHotkeyOnServer(hotkeyInput.value);
+            });
+
+            startButton.addEventListener('click', () => {
+                fetch('/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(getInterval())
+                }).then(response => response.json())
+                  .then(data => {
+                      startAutoClicker();
+                  })
+                  .catch(error => console.error('Error starting auto clicker:', error));
+            });
+
+            stopButton.addEventListener('click', () => {
+                fetch('/stop', { method: 'POST' })
+                  .then(response => response.json())
+                  .then(data => {
+                      stopAutoClicker();
+                  })
+                  .catch(error => console.error('Error stopping auto clicker:', error));
+            });
+
+            settingsButton.addEventListener('click', () => {
+                fetch('/config')
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data && data.theme && data.hotkey !== undefined) {
+                          themeToggle.value = data.theme;
+                          hotkeyInput.value = data.hotkey;
+                          hotkeyEnabled = data.hotkey !== '';
+                          document.getElementById('hours').value = data.hours || 0;
+                          document.getElementById('minutes').value = data.minutes || 0;
+                          document.getElementById('seconds').value = data.seconds || 0;
+                          document.getElementById('milliseconds').value = data.milliseconds || 0;
+                          configModal.style.display = 'flex';
+                      } else {
+                          console.error('Invalid data received from /config endpoint');
+                      }
+                  })
+                  .catch(error => console.error('Error fetching config:', error));
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                configModal.style.display = 'none';
+            });
+
+            saveSettingsButton.addEventListener('click', () => {
+                const theme = themeToggle.value;
+                const hotkey = hotkeyInput.value;
+
+                fetch('/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ theme, hotkey })
+                }).then(response => response.json())
+                  .then(data => {
+                      applyTheme(theme);
+                      showNotification('Settings saved!');
+                      configModal.style.display = 'none';
+                  })
+                  .catch(error => {
+                      showNotification('Error saving settings!', 'error');
+                      console.error('Error saving config:', error);
+                  });
+            });
+
+            notificationCloseButton.addEventListener('click', () => {
+                notification.classList.remove('show');
+            });
+
+            // Initialize theme and hotkey on page load
+            fetch('/config')
+              .then(response => response.json())
+              .then(data => {
+                  if (data && data.theme) {
+                      applyTheme(data.theme);
+                  }
+                  if (data && data.hotkey) {
+                      hotkeyInput.value = data.hotkey;
+                      hotkeyEnabled = data.hotkey !== '';
+                  } else {
+                      console.error('Invalid data received from /config endpoint');
+                  }
+              })
+              .catch(error => console.error('Error fetching config:', error));
+
+            // Hotkey functionality
+            document.addEventListener('keydown', (event) => {
+                if (hotkeyEnabled && event.key === hotkeyInput.value) {
+                    if (statusDiv.textContent.includes('Stopped')) {
+                        startAutoClicker();
+                    } else {
+                        stopAutoClicker();
+                    }
+                }
+            });
+
+            // Poll for status updates
+            setInterval(() => {
+                fetch('/status')
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data && data.status) {
+                          statusDiv.textContent = `Status: ${data.status}`;
+                      }
+                  })
+                  .catch(error => console.error('Error fetching status:', error));
+            }, 1000); // Check status every second
+        });
+    </script>
+</body>
+</html>
