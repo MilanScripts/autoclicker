@@ -1,6 +1,6 @@
 # Auto Clicker
 
-![Auto Clicker Preview](https://media.discordapp.net/attachments/1223356103610470564/1280633481751166986/MacBook_Pro_13-Inch-SCREENss.png?ex=66d8ca5f&is=66d778df&hm=16367897e456236290d441a72ed22a626f7eabe1c303c7b0ce30dde58fd3e597&=&format=webp&quality=lossless&width=413&height=350)
+![Auto Clicker Preview](https://milanscripts.nl/images/Capture.PNG)
 
 ## Overview
 
